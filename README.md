@@ -25,8 +25,8 @@ See [Startup notification](#startup-notification) to turn it on.
 The bar widget needs nothing beyond Omarchy Quattro. The optional startup
 notification uses `python3`, `notify-send` (libnotify) and `busctl` (systemd),
 all present on a stock Omarchy install. `node` is only needed to run the
-tests. No network access, no `sudo`, and no files are written outside this
-widget's own `shell.json` entry.
+tests. The plugin needs no network access or elevated privileges, and writes
+nothing outside this widget's own `shell.json` entry.
 
 ## Using it
 
