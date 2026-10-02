@@ -1,0 +1,154 @@
+#!/bin/bash
+
+# Startup reminder of how many days the memento widget says are left.
+#
+# Reads the same shell.json entry the bar widget reads, so the notification and
+# the bar can never disagree about what they were configured with.
+#
+# The date math is reimplemented here in python rather than reused from the
+# plugin's Model.js: node is not part of a stock Omarchy install and, when it
+# is present, usually comes from a version manager that is not on PATH this
+# early in a boot, while python3 is in /usr/bin. The plugin's
+# tests/test-hook.sh cross-checks the two implementations so they cannot drift.
+
+set -uo pipefail
+
+CONFIG="$HOME/.config/omarchy/shell.json"
+[[ -r $CONFIG ]] || exit 0
+
+reading=$(python3 - "$CONFIG" <<'PY'
+import datetime, json, re, sys
+
+WIDGET = "lookiyam.memento"
+DEFAULT_LIFE_EXPECTANCY = 90
+
+
+def widget_entry(cfg):
+    layout = cfg.get("bar", {}).get("layout", {})
+    for section in layout.values():
+        if not isinstance(section, list):
+            continue
+        for item in section:
+            if isinstance(item, dict) and item.get("id") == WIDGET:
+                return item
+    return None
+
+
+def parse_birth_year(value, current_year):
+    text = str("" if value is None else value).strip()
+    if not re.fullmatch(r"\d{4}", text):
+        return 0
+    year = int(text)
+    if year > current_year or year < current_year - 120:
+        return 0
+    return year
+
+
+def parse_life_expectancy(value):
+    text = str("" if value is None else value).strip()
+    if not re.fullmatch(r"\d+", text):
+        return DEFAULT_LIFE_EXPECTANCY
+    years = int(text)
+    if years <= 0 or years > 150:
+        return DEFAULT_LIFE_EXPECTANCY
+    return years
+
+
+def parse_birth_date(value, current_year):
+    text = str("" if value is None else value).strip()
+    match = re.fullmatch(r"(\d{4})-(\d{2})-(\d{2})", text)
+    if not match:
+        return None
+    year = parse_birth_year(match.group(1), current_year)
+    if year <= 0:
+        return None
+    try:
+        return datetime.date(year, int(match.group(2)), int(match.group(3)))
+    except ValueError:
+        return None
+
+
+def add_years(day, count):
+    try:
+        return day.replace(year=day.year + count)
+    except ValueError:
+        # Feb 29 carried into a non-leap year lands on Mar 1, matching the
+        # overflow behaviour of Date.UTC in Model.js.
+        return datetime.date(day.year + count, 3, 1)
+
+
+def half_up(value):
+    # JS Math.round is half-up; python's round() is half-to-even. The two must
+    # agree or the percentage here drifts a point from the widget's. The value
+    # is a clamped 0-100, so a truncating int() is the floor and needs no
+    # import of its own.
+    return int(value + 0.5)
+
+
+try:
+    with open(sys.argv[1]) as handle:
+        cfg = json.load(handle)
+except (OSError, ValueError):
+    sys.exit(1)
+
+entry = widget_entry(cfg)
+if entry is None:
+    sys.exit(1)
+
+today = datetime.date.today()
+anchor = parse_birth_date(entry.get("birthDate"), today.year)
+if anchor is None:
+    year = parse_birth_year(entry.get("birthYear"), today.year)
+    if year <= 0:
+        sys.exit(1)
+    anchor = datetime.date(year, 1, 1)
+
+expectancy = parse_life_expectancy(entry.get("lifeExpectancy"))
+end = add_years(anchor, expectancy)
+
+days = max(0, (end - today).days)
+span = (end - anchor).days
+if span <= 0:
+    sys.exit(1)
+spent = (today - anchor).days
+percent = half_up(max(0.0, min(1.0, spent / span)) * 100)
+
+print("%d %d %d" % (days, percent, expectancy))
+PY
+) || exit 0
+
+[[ -n $reading ]] || exit 0
+read -r days percent expectancy <<<"$reading"
+
+# The shell owns the notification daemon and is still coming up at post-boot
+# time, so a notification sent immediately goes nowhere. Wait for the name to
+# appear on the bus rather than sleeping a fixed guess.
+for _ in {1..30}; do
+  busctl --user status org.freedesktop.Notifications &>/dev/null && break
+  sleep 1
+done
+
+printf -v pretty "%'d" "$days"
+
+# The day's quote, indexed by the countdown itself rather than drawn at
+# random. `days` already changes exactly once a day, so the quote holds steady
+# across a second reboot or a manual preview and still turns over tomorrow --
+# which is what "changes daily" is actually asking for.
+QUOTES="$HOME/.config/omarchy/plugins/lookiyam.memento/quotes.txt"
+quote=""
+if [[ -r $QUOTES ]]; then
+  mapfile -t quotes < <(grep -vE '^[[:space:]]*(#|$)' "$QUOTES")
+  (( ${#quotes[@]} > 0 )) && quote="${quotes[$(( days % ${#quotes[@]} ))]}"
+fi
+
+# The count and the percentage share the summary line so the whole body is
+# free for the quote: the popup wraps a body of about three lines before it
+# starts ellipsizing, and the longest quote needs all three. With no quotes
+# file to draw from, the body falls back to spelling the span out.
+if [[ -n $quote ]]; then
+  body="$quote"
+else
+  body="$percent% of a $expectancy-year life behind you."
+fi
+
+notify-send -u low -a "Memento Mori" "$pretty days remaining · $percent% lived" "$body"

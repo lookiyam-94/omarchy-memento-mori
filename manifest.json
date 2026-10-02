@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "lookiyam.memento",
+  "name": "Memento Mori",
+  "version": "1.0.0",
+  "author": "lookiyam",
+  "license": "MIT",
+  "description": "Days remaining against a configured birth year and life expectancy.",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "Memento Mori",
+    "description": "Counts down the days left against a life expectancy",
+    "category": "Time",
+    "allowMultiple": false,
+    "defaultSection": "center"
+  }
+}

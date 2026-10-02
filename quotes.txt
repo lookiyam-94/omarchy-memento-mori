@@ -1,0 +1,36 @@
+# One quote per line, shown in the boot notification. Blank lines and lines
+# starting with # are ignored. Add your own freely -- the hook picks by index,
+# so the list can be any length.
+#
+# Avoid the characters & and < : some notification daemons parse the body as
+# markup and will mangle or swallow the line.
+
+“I intend to live forever. So far, so good.” — Steven Wright
+“I’m not afraid of death; I just don’t want to be there when it happens.” — Woody Allen
+“I don’t want to achieve immortality through my work; I want to achieve it through not dying.” — Woody Allen
+“Do not take life too seriously. You will never get out of it alive.” — Elbert Hubbard
+“Let us so live that when we come to die even the undertaker will be sorry.” — Mark Twain
+“The report of my death was an exaggeration.” — Mark Twain
+“In this world nothing can be said to be certain, except death and taxes.” — Benjamin Franklin
+“Lost time is never found again.” — Benjamin Franklin
+“I love deadlines. I love the whooshing noise they make as they go by.” — Douglas Adams
+“Life is what happens to you while you’re busy making other plans.” — John Lennon
+“You only live once, but if you do it right, once is enough.” — Mae West
+“Life is a great surprise. I do not see why death should not be an even greater one.” — Vladimir Nabokov
+“The idea is to die young as late as possible.” — Ashley Montagu
+“Old age is always fifteen years older than I am.” — Bernard Baruch
+“I’m at an age where my back goes out more than I do.” — Phyllis Diller
+“How old would you be if you didn’t know how old you was?” — Satchel Paige
+“Procrastination is the thief of time.” — Edward Young
+“Time you enjoy wasting is not wasted time.” — Marthe Troly-Curtin
+“The trouble with being punctual is that nobody’s there to appreciate it.” — Franklin P. Jones
+“There are three ages of man: youth, middle age, and ‘you’re looking wonderful.’” — Francis Cardinal Spellman
+“The graveyards are full of indispensable men.” — Charles de Gaulle
+“Life is hard. After all, it kills you.” — Katharine Hepburn
+“Time is a great teacher, but unfortunately it kills all its pupils.” — Hector Berlioz
+“I’m killing time while I wait for life to shower me with meaning and happiness.” — Bill Watterson
+“Better three hours too soon than a minute too late.” — William Shakespeare
+“The only difference between death and taxes is that death doesn’t get worse every time Congress meets.” — Will Rogers
+“We are all going to die, all of us; what a circus!” — Charles Bukowski
+“Man plans, God laughs.” — Yiddish proverb
+“Life is short, but it’s wide.” — Spanish proverb
