@@ -1,11 +1,12 @@
 # Memento Mori
 
-A bar widget counting the days remaining against a birth year and a life
-expectancy, with a click-to-configure popup and a reminder at every boot.
+A small skull on the bar that, when clicked, shows the days remaining against
+a birth year and a life expectancy, with the settings right below the count
+and a reminder at every boot.
 
 The stock `omarchy.clock` plugin already carries this idea as a progress bar
-inside its calendar popup. This is the number on its own, always in view, and
-kept as a separate plugin so the packaged clock stays untouched and keeps
+inside its calendar popup. This keeps the count one click away behind a quiet
+skull icon (the bar never shows the number), and is kept as a separate plugin so the packaged clock stays untouched and keeps
 receiving updates.
 
 ## Install
@@ -14,7 +15,7 @@ receiving updates.
 omarchy plugin add https://github.com/lookiyam-94/omarchy-memento-mori.git --enable
 ```
 
-Then click the widget and enter a birth year. Until one is set the widget
+Then click the skull and enter a birth year. Until one is set the popup
 shows `—`.
 
 The startup notification is optional and not installed by the command above.
@@ -30,7 +31,7 @@ nothing outside this widget's own `shell.json` entry.
 
 ## Using it
 
-**Click the widget** to open the settings popup. It shows the count, the
+**Click the skull** to open the popup. It shows the count, the
 percentage lived, and the two fields behind them:
 
 ```
@@ -59,17 +60,16 @@ The panel is the easy path, but the same keys can be edited directly in
 
 | Key | Default | Meaning |
 | --- | --- | --- |
-| `birthYear` | *(unset)* | Four-digit year. Unset, malformed, in the future, or more than 120 years back leaves the widget showing `—`. |
+| `birthYear` | *(unset)* | Four-digit year. Unset, malformed, in the future, or more than 120 years back leaves the popup showing `—`. |
 | `lifeExpectancy` | `90` | Whole years. Values outside 1–150 fall back to the default. |
 | `birthDate` | *(unset)* | Optional `"YYYY-MM-DD"`. Takes precedence over `birthYear`. |
-| `format` | `"{days}"` | Label template; `{days}` is replaced by the count. |
+| `format` | `"{days}"` | No longer used: the bar shows only a skull (󰚌); click it for the count. |
 
 ```json
 {
   "id": "lookiyam.memento",
   "birthYear": 1990,
-  "lifeExpectancy": 70,
-  "format": "{days}d"
+  "lifeExpectancy": 70
 }
 ```
 
@@ -132,7 +132,7 @@ per day.
 
 ## Note on the percentage
 
-The tooltip and popup compute "% lived" in **days**, while the clock's own bar
+The popup computes "% lived" in **days**, while the clock's own bar
 uses **whole years** (`age / expectancy`). The two can differ by a point —
 for 1990 and 70 years on 2026-08-28: 52% here, 51% in the clock popup. Both are correct for their method;
 this one is finer-grained.
@@ -143,9 +143,9 @@ settings. Changing one here does not change the clock's copy.
 
 ## Layout
 
-Horizontal bars only. On a vertical bar the label will be clipped; the stock
-clock handles that case with a stacked `OpticalGlyph` column if you ever need
-it.
+The bar shows only the skull icon (`󰚌`, Nerd Font `nf-md-skull`), drawn with
+the stock `BarIconButton`. Hovering shows just "Memento Mori", so the count
+appears only when you click.
 
 ## IPC
 

@@ -7,18 +7,19 @@ import "Model.js" as Model
 
 // Days remaining, counted against a configured birth year and life
 // expectancy. The stock clock plugin keeps the same idea as a bar inside its
-// calendar popup; this is the number on its own, always in view, and owned
-// separately so the packaged clock stays untouched and keeps updating.
+// calendar popup; this keeps it one click away behind a small skull on the
+// bar, owned separately so the packaged clock stays untouched.
 //
-// Left click opens the settings popup -- clicking a countdown is how you ask
-// what it is counting.
+// Left click opens the popup with the count and the date settings. The bar
+// itself shows only the skull, never the number.
 //
 // Settings (per-widget, in shell.json's layout entry):
 //   birthYear       4-digit year. Unset or implausible hides the widget.
 //   lifeExpectancy  Whole years. Unset or absurd falls back to 90.
 //   birthDate       Optional "YYYY-MM-DD". Without it the endpoint can be no
 //                   better than January 1 of the birth year.
-//   format          Label template; "{days}" is substituted.
+//   format          Unused since the bar shows a skull (kept so older
+//                   shell.json entries still load).
 BarWidget {
   id: root
   moduleName: "lookiyam.memento"
@@ -43,9 +44,10 @@ BarWidget {
   readonly property int percent: Model.percentLived(today, birthYear, birthDate, lifeExpectancy)
   readonly property string displayText: daysLeft < 0 ? "—" : Model.barLabel(daysLeft, labelFormat)
 
+  // Hovering must not give the count away; that is what the click is for.
   readonly property string tooltip: daysLeft < 0
     ? "Memento Mori — click to set a birth year"
-    : Model.groupDigits(daysLeft) + " days remaining · " + percent + "% lived"
+    : "Memento Mori"
 
   function refresh() {
     now = new Date()
@@ -55,7 +57,6 @@ BarWidget {
   // ---- Popup. Shape contract for the bar's panel routing: Bar.findPanelWidget
   //      requires open/close/opened on the bar-widget root itself.
   readonly property bool opened: panelLoader.item ? panelLoader.item.opened === true : false
-  readonly property real openPanelIndicatorWidth: button.labelWidth
 
   function open() { if (panelLoader.item) panelLoader.item.open() }
   function close() { if (panelLoader.item) panelLoader.item.close() }
@@ -109,14 +110,12 @@ BarWidget {
     function days(): string { return root.daysLeft < 0 ? "" : String(root.daysLeft) }
   }
 
-  WidgetButton {
+  BarIconButton {
     id: button
     anchors.fill: parent
     bar: root.bar
-    text: root.displayText
+    text: "󰚌"
     tooltipText: root.tooltip
-    horizontalMargin: 8.75
-    verticalPadding: 8.75
 
     onPressed: function(b) {
       if (b === Qt.LeftButton) root.togglePanel()
