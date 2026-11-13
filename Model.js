@@ -127,6 +127,21 @@ function barLabel(days, template) {
   return text.replace(/\{days\}/g, groupDigits(days))
 }
 
+// The day's quote from quotes.txt's raw text, picked the same way the boot
+// hook picks it -- quotes[days % count] over the non-blank, non-# lines -- so
+// the popup and the morning notification always show the same line.
+function quoteOfTheDay(text, days) {
+  if (days < 0) return ""
+  var lines = String(text === undefined || text === null ? "" : text).split("\n")
+  var quotes = []
+  for (var i = 0; i < lines.length; i++) {
+    if (/^\s*(#|$)/.test(lines[i])) continue
+    quotes.push(lines[i].replace(/\r$/, ""))
+  }
+  if (quotes.length === 0) return ""
+  return quotes[days % quotes.length]
+}
+
 if (typeof module !== "undefined" && module.exports) {
   module.exports = {
     DEFAULT_LIFE_EXPECTANCY: DEFAULT_LIFE_EXPECTANCY,
@@ -139,6 +154,7 @@ if (typeof module !== "undefined" && module.exports) {
     daysRemaining: daysRemaining,
     percentLived: percentLived,
     groupDigits: groupDigits,
-    barLabel: barLabel
+    barLabel: barLabel,
+    quoteOfTheDay: quoteOfTheDay
   }
 }

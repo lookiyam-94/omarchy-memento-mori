@@ -107,6 +107,10 @@ The pick is **not random**. The index is the countdown itself:
 quotes[ days % quote_count ]
 ```
 
+The same quote appears in the popup under the count when you click the
+skull. The panel reads the same `quotes.txt` and uses the same pick
+(`Model.quoteOfTheDay`), so the popup and the boot notification always match.
+
 `days` already changes exactly once a day, so the quote holds steady across a
 second reboot or a manual preview and still turns over tomorrow — which is
 what "changes daily" actually asks for, and what `shuf` or `$RANDOM` would

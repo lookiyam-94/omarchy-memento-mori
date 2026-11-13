@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import qs.Commons
 import qs.Ui
 import "Model.js" as Model
@@ -47,6 +48,9 @@ Panel {
     var year = Model.parseBirthYear(birthYear, today.year)
     return year > 0 ? String(year) : ""
   }
+
+  // Same file and same pick as the boot notification's quote.
+  readonly property string quote: Model.quoteOfTheDay(quotesFile.text(), daysLeft)
 
   function refresh() {
     now = new Date()
@@ -104,6 +108,14 @@ Panel {
 
   onOpenedChanged: if (opened) { refresh(); Qt.callLater(loadFields) }
 
+  FileView {
+    id: quotesFile
+    path: Qt.resolvedUrl("quotes.txt").toString().replace(/^file:\/\//, "")
+    watchChanges: true
+    printErrors: false
+    onFileChanged: reload()
+  }
+
   SystemClock {
     id: clock
     precision: SystemClock.Minutes
@@ -147,6 +159,20 @@ Panel {
         color: Qt.darker(root.contentForeground, 1.5)
         font.family: root.contentFontFamily
         font.pixelSize: Style.font.bodySmall
+        renderType: Text.NativeRendering
+      }
+
+      Text {
+        visible: root.quote !== ""
+        width: parent.width
+        topPadding: Style.space(4)
+        text: root.quote
+        wrapMode: Text.WordWrap
+        horizontalAlignment: Text.AlignHCenter
+        color: root.contentForeground
+        font.family: root.contentFontFamily
+        font.pixelSize: Style.font.bodySmall
+        font.italic: true
         renderType: Text.NativeRendering
       }
 
