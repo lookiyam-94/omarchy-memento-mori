@@ -52,8 +52,23 @@ Panel {
   // Same file and same pick as the boot notification's quote.
   readonly property string quote: Model.quoteOfTheDay(quotesFile.text(), daysLeft)
 
+  // The date fields stay tucked away until the pencil (or `e`) asks for
+  // them, so the popup reads as the count and the quote first. An unset
+  // widget opens straight into editing: there is nothing else to show.
+  property bool editing: false
+
   function refresh() {
     now = new Date()
+  }
+
+  function startEditing() {
+    editing = true
+    Qt.callLater(loadFields)
+  }
+
+  function stopEditing() {
+    editing = false
+    Qt.callLater(function() { keyCatcher.forceActiveFocus() })
   }
 
   // Merged over the existing entry rather than replacing it, so a key this
@@ -87,14 +102,14 @@ Panel {
     if (exact) persistSettings({ birthYear: exact.year, birthDate: typed, lifeExpectancy: span })
     else persistSettings({ birthYear: Model.parseBirthYear(typed, root.today.year), birthDate: "", lifeExpectancy: span })
 
-    root.close()
+    root.stopEditing()
   }
 
-  // Tab hops between the two, Enter commits the pair, Escape drops the lot --
-  // the same contract the clock's own life editor uses.
+  // Tab hops between the two, Enter commits the pair and goes back to the
+  // count, Escape drops the edit and goes back without saving.
   function handleKey(event, other) {
     if (event.key === Qt.Key_Escape) {
-      root.close()
+      root.stopEditing()
       event.accepted = true
     } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
       root.commit()
@@ -106,7 +121,12 @@ Panel {
     }
   }
 
-  onOpenedChanged: if (opened) { refresh(); Qt.callLater(loadFields) }
+  onOpenedChanged: {
+    if (!opened) return
+    refresh()
+    if (daysLeft < 0) startEditing()
+    else stopEditing()
+  }
 
   FileView {
     id: quotesFile
@@ -127,7 +147,7 @@ Panel {
     bar: root.bar
     owner: root.barIdentity
     open: root.opened
-    focusTarget: bornField
+    focusTarget: root.editing ? bornField : keyCatcher
     contentWidth: popup.fittedContentWidth(Style.space(300))
     contentHeight: popup.fittedContentHeight(content.implicitHeight)
 
@@ -136,8 +156,38 @@ Panel {
       anchors.fill: parent
       spacing: Style.space(10)
 
-      PanelSectionHeader {
-        text: "MEMENTO MORI"
+      Item {
+        width: parent.width
+        height: Math.max(header.implicitHeight, editButton.implicitHeight)
+
+        PanelSectionHeader {
+          id: header
+          anchors.left: parent.left
+          anchors.verticalCenter: parent.verticalCenter
+          text: "MEMENTO MORI"
+        }
+
+        PanelActionButton {
+          id: editButton
+          anchors.right: parent.right
+          anchors.rightMargin: -Style.space(4)
+          anchors.verticalCenter: parent.verticalCenter
+          iconText: root.editing ? "󰅖" : "󰏫"
+          tooltipText: root.editing ? "Cancel" : "Edit birth date"
+          foreground: root.contentForeground
+          fontFamily: root.contentFontFamily
+          onClicked: root.editing ? root.stopEditing() : root.startEditing()
+        }
+
+        // Keyboard handling while just viewing: Esc closes, e or Enter edits.
+        PanelKeyCatcher {
+          id: keyCatcher
+          width: 0
+          height: 0
+          onCloseRequested: root.close()
+          onActivateRequested: root.startEditing()
+          onTextKey: function(text, modifiers) { if (text === "e") root.startEditing() }
+        }
       }
 
       // ---- The count, stated once and large. Everything below it is the
@@ -177,10 +227,12 @@ Panel {
       }
 
       PanelSeparator {
+        visible: root.editing
         width: parent.width
       }
 
       Row {
+        visible: root.editing
         anchors.horizontalCenter: parent.horizontalCenter
         spacing: Style.space(8)
 
@@ -228,8 +280,9 @@ Panel {
       }
 
       Text {
+        visible: root.editing
         anchors.horizontalCenter: parent.horizontalCenter
-        text: "enter saves · tab switches · esc closes"
+        text: "enter saves · tab switches · esc cancels"
         color: Qt.darker(root.contentForeground, 1.8)
         font.family: root.contentFontFamily
         font.pixelSize: Style.font.caption

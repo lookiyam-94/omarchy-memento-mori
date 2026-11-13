@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "lookiyam.memento",
   "name": "Memento Mori",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "author": "lookiyam",
   "license": "MIT",
   "description": "Days remaining against a configured birth year and life expectancy.",

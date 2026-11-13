@@ -32,17 +32,22 @@ nothing outside this widget's own `shell.json` entry.
 ## Using it
 
 **Click the skull** to open the popup. It shows the count, the
-percentage lived, and the two fields behind them:
+percentage lived and the quote of the day. The date fields stay hidden until
+you click the pencil (or press `e`):
 
 ```
-                MEMENTO MORI
+   MEMENTO MORI                         ✎
                    12,179
         days remaining · 52% lived
+   "Lost time is never found again." — Benjamin Franklin
+   ──────────────────────────────────────
    BORN [ 1990 ]      LIVE TO [ 70 ]
-   enter saves · tab switches · esc closes
+   enter saves · tab switches · esc cancels
 ```
 
-`Enter` saves and closes, `Tab` moves between fields, `Esc` discards. Saving
+While editing, `Enter` saves and goes back to the count, `Tab` moves between
+fields, and `Esc` (or the ✕ in the corner) cancels. Outside editing, `Esc`
+closes the popup. An unset widget opens straight into editing. Saving
 writes straight back into this widget's `shell.json` entry through the same
 `updateEntryInline` path the stock clock uses for its own settings, so the
 panel and the config can never drift apart. Keys the panel does not know about
